@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <link rel="icon" type="image/x-icon"
+    href="https://icons.iconarchive.com/icons/vcferreira/firefox-os/256/clock-icon.png" />
+
+  <title>Memento Mori</title>
+</head>
+
+<body>
+
+  <a class="reset-link" onclick="localStorage.removeItem('birthDate'); window.location.reload();">Reset</a>
+
+  <h5 class="main-title">
+    Memento Mori
+  </h5>
+
+  <p id="quote" class="quote"></p>
+
+  <div>
+    <div id="main-container"></div>
+  </div>
+
+  <noscript>
+    This page needs JavaScript to work properly.
+  </noscript>
+
+</body>
+
+</html>
+
+<style>
+  :root {
+    --dark-blue: #222e39;
+    --light-blue: #00ccf4;
+    --white-cream: #eeeeee;
+  }
+
+  body {
+    background-color: var(--dark-blue);
+    color: var(--white-cream);
+    font-family: "Roboto", sans-serif;
+    padding: 1rem;
+  }
+
+  .reset-link {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 1rem;
+    padding: 0.5rem;
+    color: var(--white-cream);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* TITLE */
+  .main-title {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.5;
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+  }
+
+  .main-title::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    margin-left: -50px;
+    width: 150px;
+    height: 4px;
+    background-color: var(--light-blue);
+    animation-name: title-anim;
+    animation-duration: 0.5s;
+  }
+
+  @keyframes title-anim {
+    from {
+      opacity: 0;
+      transform: translate(-100px);
+    }
+  }
+
+  /* QUOTE */
+  .quote {
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.5;
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+  }
+
+  /* CONTAINER & CELLS & ROWS */
+  .cell {
+    background-color: var(--white-cream);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+  }
+
+  .row {
+    font-weight: 500;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: var(--white-cream);
+    color: var(--dark-blue);
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+  }
+</style>
+
+<script>
+
+  function convertDateFormat(dateString) {
+    const parts = dateString.split('/');
+    return `${parts[2]}-${parts[0]}-${parts[1]}`;
+  }
+
+  function detectMob() {
+    const toMatch = [/Android/i, /webOS/i, /iPhone/i, /iPad/i, /iPod/i, /BlackBerry/i, /Windows Phone/i];
+    return toMatch.some((toMatchItem) => {
+      return navigator.userAgent.match(toMatchItem);
+    });
+  }
+
+  const isOnMobile = detectMob();
+
+  // Manage birthdate
+  let dashBirthDate = null;
+  if (localStorage.getItem("birthDate") !== null) {
+    dashBirthDate = localStorage.getItem("birthDate");
+  } else {
+    const slashBirthDate = window.prompt('Enter your birthdate as mm/dd/yyyy');
+    if (slashBirthDate === null) {
+      alert('You must enter a birthdate to use this website')
+      window.location.reload();
+    }
+    dashBirthDate = convertDateFormat(slashBirthDate);
+    localStorage.setItem("birthDate", dashBirthDate);
+  }
+  const birthTime = new Date(dashBirthDate).getTime();
+  const currentTime = new Date().getTime();
+  const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365.25;
+  const yearsAlive = (currentTime - birthTime) / millisecondsPerYear;
+
+  // Manage rows and cells
+  const container = document.getElementById("main-container");
+  for (let i = 1; i <= 80; i++) {
+    const yearDiv = document.createElement("div");
+
+    // if (i === parseInt(yearsAlive) + 1) {
+    //   yearDiv.id = "todaysYear";
+    // }
+
+    let currentBackground = "";
+    if (i <= yearsAlive) {
+      currentBackground = "linear-gradient(to right, var(--light-blue) 100%, var(--white-cream) 100%)";
+    } else if (i === parseInt(yearsAlive) + 1) {
+      const percentOfYear = (yearsAlive % 1) * 100;
+      currentBackground = "linear-gradient(to right, var(--light-blue) " + percentOfYear + "%, var(--white-cream) " + percentOfYear + "%)";
+    } else {
+      currentBackground = "linear-gradient(to right, var(--light-blue) 0%, var(--white-cream) 0%)";
+    }
+
+    if (isOnMobile === true) {
+      yearDiv.className = "row";
+      yearDiv.style.background = currentBackground;
+      if (i === parseInt(yearsAlive) + 1) {
+        yearDiv.id = "todaysYear";
+      }
+    } else {
+      yearDiv.className = "cell";
+      yearDiv.style.background = currentBackground;
+      container.style.display = "grid";
+      container.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr";
+      container.style.gridGap = "23px";
+    }
+
+    container.appendChild(yearDiv);
+  }
+
+  // Manage quote
+  const allQuotes = [
+    {
+      "quote": "He who is not courageous enough to take risks will accomplish nothing in life.",
+      "author": "Plato",
+    },
+    {
+      "quote": "The unexamined life is not worth living.",
+      "author": "Socrates",
+    },
+    {
+      "quote": "Let no one delay the study of philosophy while young nor weary of it when old.",
+      "author": "Epicurus",
+    },
+    {
+      "quote": "Death is not an evil, because it frees us from all evils, and while we exist, death is not present, and when death is present, then we do not exist.",
+      "author": "Epicurus",
+    },
+    {
+      "quote": "Do not spoil what you have by desiring what you have not; remember that what you now have was once among the things you only hoped for.",
+      "author": "Epicurus",
+    },
+    {
+      "quote": "Life is what happens while you are busy making other plans.",
+      "author": "attributed to various sources, including Plutarch and Heraclitus.",
+    },
+    {
+      "quote": "I am not afraid of death, I just don't want to be there when it happens.",
+      "author": "Socrates",
+    },
+    {
+      "quote": "The hour of departure has arrived, and we go our separate ways. I go to die, and you to live. Which of us goes to the better lot is known to no one, except the god.",
+      "author": "Socrates",
+    },
+    {
+      "quote": "We are not given a short life but we make it short, and we are not ill-supplied but wasteful of it.",
+      "author": "Seneca the Younger",
+    },
+    {
+      "quote": "The whole future lies in uncertainty: live immediately.",
+      "author": "Seneca the Younger",
+    },
+    {
+      "quote": "It is not that we have a short time to live, but that we waste a lot of it.",
+      "author": "Seneca the Younger",
+    },
+    {
+      "quote": "Life is long if you know how to use it.",
+      "author": "Seneca the Younger",
+    },
+  ]
+  const generatedQuote = allQuotes[Math.floor(Math.random() * allQuotes.length)];
+  const quote = document.getElementById('quote');
+  quote.innerHTML = "\"" + generatedQuote.quote + "\"<br />" + generatedQuote.author;
+
+  // Set view to current year
+  // setTimeout(() => {
+  //   const element = document.getElementById('todaysYear');
+  //   element.scrollIntoView({ behavior: "smooth", block: "center" });
+  // }, 5000);
+
+
+</script>
